@@ -66,28 +66,64 @@ router.patch('/books/:id', function(req, res, next) {
     .first()
     .then(function(book){
       const {title, author, genre, description, cover_url} = req.body;
-      console.log("Title: "+title);
-      console.log("Description: "+description)
+
+      const updateBook = {};
+
+      if (title) {
+        updateBook.title = title;
+      }
+
+      if (author) {
+        updateBook.author = author;
+      }
+
+      if (genre) {
+        updateBook.genre = genre;
+      }
+
+      if (description) {
+        updateBook.description = description;
+      }
+
+      if (cover_url) {
+        updateBook.cover_url = cover_url;
+      }
+
+      return knex('books')
+        .update(updateBook)
+        .where('id', id);
     })
-    console.log("This is working");
+
+    .then(function(rows){
+      const book = rows[0];
+      res.send(book);
+    })
+
+    .catch(function (err) {
+      next(err);
+    })
+
 });
 
-router.delete('/books/:id', function(req, res) {
+router.delete('/books/:id', function(req, res, next) {
+  const id = parseInt(req.params.id);
+
+  if(Number.isNaN(id)) {
+    res.next(req.params.id +" is not a number, dum dum");
+  }
+
+  let book;
+
   knex('books')
-    .del('*')
-    .then(function(data){
-      res.sendStatus(200).send(data)
+    .where('id', id)
+    .first()
+    .then(function(row){
+      book = row
+      return knex('books')
+        .del()
+        .where('id', id);
     })
-    console.log("Everything is gone");
+    .then(function(){
+      res.send(book);
+    })
 });
-
-
-// alternative patch code below
-// knex('books')
-//   .where('id', req.params.id)
-//   .update({description : "test update description"})
-//   .then(function(data){
-//     res.sendStatus(200).send(data)
-//   });
-//   console.log("This is working");
-// })

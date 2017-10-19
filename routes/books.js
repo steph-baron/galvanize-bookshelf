@@ -9,7 +9,7 @@ const router = express.Router();
 // rows = data
 module.exports = router;
 
-router.get('/books', (_req, res, next) => {
+router.get('/books', (req, res, next) => {
   knex('books')
     .orderBy('title')
     .then((rows) => {
@@ -22,7 +22,7 @@ router.get('/books', (_req, res, next) => {
     });
 })
 
-router.get('/books/:id', function(req, res) {
+router.get('/books/:id', function(req, res, next) {
   const id = parseInt(req.params.id);
 
   if(Number.isNaN(id)) {
@@ -42,7 +42,7 @@ router.get('/books/:id', function(req, res) {
     })
 })
 
-router.post('/books', function(req, res) {
+router.post('/books', function(req, res, next) {
   knex('books')
     .insert(req.body)
     .then(function(rows){
@@ -54,3 +54,40 @@ router.post('/books', function(req, res) {
     // });
 
 })
+
+router.patch('/books/:id', function(req, res, next) {
+  const id = parseInt(req.params.id);
+
+  if(Number.isNaN(id)) {
+    res.next(req.params.id +" is not a number, dum dum");
+  }
+  knex('books')
+    .where('id', id)
+    .first()
+    .then(function(book){
+      const {title, author, genre, description, cover_url} = req.body;
+      console.log("Title: "+title);
+      console.log("Description: "+description)
+    })
+    console.log("This is working");
+});
+
+router.delete('/books/:id', function(req, res) {
+  knex('books')
+    .del('*')
+    .then(function(data){
+      res.sendStatus(200).send(data)
+    })
+    console.log("Everything is gone");
+});
+
+
+// alternative patch code below
+// knex('books')
+//   .where('id', req.params.id)
+//   .update({description : "test update description"})
+//   .then(function(data){
+//     res.sendStatus(200).send(data)
+//   });
+//   console.log("This is working");
+// })
